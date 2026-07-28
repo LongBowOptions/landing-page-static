@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longbow · Options for any asset</title>
+<meta name="description" content="Longbow splits one unit of spot into a capped claim and a call. Capped downside, uncapped upside, on assets that have never had an options chain.">
+<link rel="icon" href="assets/logo-mark.svg">
+<link rel="canonical" href="https://longbowoptions.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Longbow · Options for any asset">
+<meta property="og:description" content="Longbow splits one unit of spot into a capped claim and a call. Capped downside, uncapped upside, on assets that have never had an options chain.">
+<meta property="og:url" content="https://longbowoptions.com/">
+<meta property="og:image" content="https://longbowoptions.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ---------------------------------------------------------------------------
+   Tokens.
+
+   The palette is taken from brand/, not invented: the gold ramp is the logo's
+   own (the cream of LONG, the two stops of the mark's gradient, the gold of
+   BOW), and the surface ramp is anchored on the green the mark sits on.
+
+   Gold is the accent everywhere. Mint reads as upside and red as loss, and
+   they are used for nothing else, so a number's colour is always a claim about
+   its sign rather than decoration.
+--------------------------------------------------------------------------- */
+:root{
+  /* surfaces: a green-black ramp, with --ink-600 the brand green itself */
+  --ink-950:#080D09;
+  --ink-900:#0B120D;
+  --ink-800:#101A13;
+  --ink-700:#16241A;
+  --ink-600:#1F392C;
+
+  --surface-page:var(--ink-900);
+  --surface-raised:var(--ink-700);
+  --surface-card:#131F17;
+  --surface-inset:#0C140F;
+  --surface-accent-soft:rgba(212,178,93,.10);
+  --surface-mint-soft:rgba(102,226,190,.08);
+  --border-hairline:rgba(212,178,93,.14);
+
+  /* gold, straight off the logo */
+  --gold-100:#FEEBBF;
+  --gold-300:#E1C993;
+  --gold-400:#D4B25D;
+  --gold-600:#CC9107;
+
+  --up-500:#66E2BE;
+  --down-500:#E2705F;
+
+  --text-display:#F5F1E4;
+  --text-body:#C6C9BC;
+  --text-muted:#909586;
+  --text-faint:#6B7166;
+  --text-accent:var(--gold-400);
+
+  --font-display:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+
+  --fw-medium:500;
+  --fw-bold:700;
+
+  --text-hero:clamp(56px,8.4vw,104px);
+  --text-title-2:clamp(21px,2.4vw,27px);
+  /* --text-title-3 and --text-body-sm are consumed inside the `font:` shorthand
+     below, so they stay plain lengths rather than clamp() expressions. */
+  --text-title-3:20px;
+  --text-body-lg:clamp(17px,1.5vw,19px);
+  --text-body-md:15px;
+  --text-body-sm:13px;
+
+  --ls-display:-.02em;
+  --ls-label:.14em;
+
+  --radius-control:6px;
+  --radius-pill:999px;
+  --radius-md:8px;
+  --radius-lg:12px;
+  --radius-xl:16px;
+
+  --shadow-md:0 6px 20px rgba(0,0,0,.32);
+  --shadow-lg:0 18px 48px rgba(0,0,0,.42);
+  --inset-well:inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+/* Several elements below carry an inline `display`, which outranks the user
+   agent's [hidden] rule and would leave them visible while hidden. */
+[hidden]{display:none!important}
+a{color:var(--text-accent);text-decoration:none;transition:color .2s}
+a:hover{color:var(--gold-100)}
+img{max-width:100%}
+::selection{background:var(--gold-400);color:var(--ink-950)}
+
+/* One ring style for everything focusable. Gold on green clears contrast at
+   every surface on the page, so it does not need a per-component variant. The
+   outline follows each element's own border-radius, so this must not set one:
+   doing so would square off the controls exactly when they are being used. */
+:focus-visible{outline:2px solid var(--gold-400);outline-offset:2px}
+
+/* ---------- controls ---------- */
+
+.lb-input{
+  width:100%;height:40px;padding:0 12px;
+  background:var(--surface-inset);color:var(--text-display);
+  border:1px solid var(--border-hairline);border-radius:var(--radius-control);
+  font:400 var(--text-body-md)/1 var(--font-body);
+  transition:border-color .2s,background .2s;
+}
+.lb-input::placeholder{color:var(--text-faint)}
+.lb-input:hover{border-color:rgba(212,178,93,.28)}
+.lb-input:focus{outline:none;border-color:var(--gold-400);background:var(--ink-950)}
+.lb-input[aria-invalid="true"]{border-color:var(--down-500)}
+
+.lb-button{
+  height:40px;padding:0 20px;cursor:pointer;white-space:nowrap;
+  border:1px solid var(--gold-400);border-radius:var(--radius-control);
+  background:linear-gradient(180deg,var(--gold-300),var(--gold-600));
+  color:var(--ink-950);
+  font:var(--fw-bold) 12px/1 var(--font-display);
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  transition:filter .2s,transform .05s;
+}
+.lb-button:hover:not(:disabled){filter:brightness(1.08)}
+.lb-button:active:not(:disabled){transform:translateY(1px)}
+.lb-button:disabled{cursor:default;opacity:.5}
+
+.lb-chip{
+  display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;
+  border-radius:var(--radius-pill);
+  background:var(--surface-accent-soft);border:1px solid var(--border-hairline);
+}
+.lb-chip b{font:var(--fw-medium) 12px/1 var(--font-mono);color:var(--gold-400);font-variant-numeric:tabular-nums}
+.lb-chip span{font:400 12px/1 var(--font-body);color:var(--text-muted)}
+
+.lb-navlink{
+  display:inline-flex;align-items:center;height:36px;padding:0 16px;white-space:nowrap;
+  border-radius:var(--radius-control);
+  background:var(--surface-accent-soft);border:1px solid rgba(212,178,93,.3);
+  color:var(--text-accent);
+  font:var(--fw-medium) 12px/1 var(--font-display);
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  transition:background .2s,color .2s;
+}
+.lb-navlink:hover{background:rgba(212,178,93,.18);color:var(--gold-100)}
+
+/* ---------- sliders ----------
+
+   Native range inputs. They come with keyboard stepping, home and end, and the
+   right announcement, none of which is worth rebuilding on a div. The track
+   needs the vendor pseudo-elements written out twice because the two engines
+   do not share a selector, and a shorthand that groups them would drop both.
+
+   The filled portion is a gradient hard-stopped at --fill, which render() sets
+   as a percentage. */
+
+.lb-range{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:20px;margin:0;background:transparent;cursor:pointer;display:block;
+}
+.lb-range::-webkit-slider-runnable-track{
+  height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--gold-400) var(--fill,0%),rgba(212,178,93,.18) var(--fill,0%));
+}
+.lb-range::-moz-range-track{
+  height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--gold-400) var(--fill,0%),rgba(212,178,93,.18) var(--fill,0%));
+}
+.lb-range::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;margin-top:-6px;border-radius:50%;
+  background:var(--gold-400);border:2px solid var(--surface-raised);
+  box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+.lb-range::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--gold-400);border:2px solid var(--surface-raised);
+  box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+.lb-range:focus{outline:none}
+.lb-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--surface-raised),0 0 0 5px var(--gold-400)}
+.lb-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--surface-raised),0 0 0 5px var(--gold-400)}
+
+/* The scale under a slider: the two ends of its range, so the handle's position
+   means something without having to drag it to find out. */
+.lb-scale{
+  display:flex;justify-content:space-between;
+  font:var(--fw-medium) 9.5px/1 var(--font-mono);letter-spacing:.06em;
+  color:var(--text-faint);font-variant-numeric:tabular-nums;
+}
+.lb-readout{
+  font:var(--fw-bold) var(--text-body-sm)/1 var(--font-mono);
+  color:var(--text-display);font-variant-numeric:tabular-nums;
+}
+.lb-readout small{font-weight:500;color:var(--text-muted);margin-left:8px}
+
+/* The status line under the form. Red only when it reports a failure; the
+   unconfigured-endpoint case is a statement of fact, not an error. */
+.lb-status{margin:0;font-weight:300;font-size:var(--text-body-sm);line-height:1.5;color:var(--text-faint)}
+.lb-status[data-tone="error"]{color:var(--down-500)}
+/* Takes no room in the form's grid gap until it has something to say. */
+.lb-status:empty{display:none}
+
+/* The honeypot. Moved off-screen rather than hidden, because a field that is
+   display:none is one a bot can cheaply learn to skip. aria-hidden and the
+   negative tabindex keep it away from anyone reading or tabbing the form. */
+.lb-hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+
+/* ---------- layout ---------- */
+
+.lb-section{padding:0 32px;display:flex;justify-content:center}
+.lb-wrap{width:100%;max-width:1240px}
+
+.lb-hero{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr));
+  gap:64px 72px;align-items:center;
+}
+
+.lb-tile{
+  padding:14px;border-radius:var(--radius-md);
+  background:var(--surface-inset);border:1px solid var(--border-hairline);
+  box-shadow:var(--inset-well);display:grid;gap:6px;
+}
+.lb-tile dt{font:var(--fw-medium) 10px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted)}
+.lb-tile dd{margin:0;font-family:var(--font-mono);font-weight:700;font-size:16px;line-height:1;font-variant-numeric:tabular-nums}
+
+.lb-label{font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted)}
+.lb-claim h3{margin:0;font-family:var(--font-display);font-weight:900;font-size:var(--text-title-2);line-height:1.1;letter-spacing:var(--ls-display);text-transform:uppercase;color:var(--text-display)}
+.lb-claim p{margin:0;font-weight:300;font-size:var(--text-body-md);line-height:1.5;color:var(--text-muted);text-wrap:pretty}
+
+/* The mark, ghosted behind the hero. Decorative, hidden from assistive tech,
+   and clipped by the page's overflow rather than being allowed to widen it. */
+.lb-watermark{position:absolute;top:-60px;right:-140px;width:620px;opacity:.07;pointer-events:none;user-select:none}
+@media (max-width:900px){.lb-watermark{width:420px;right:-160px}}
+
+@media (max-width:560px){
+  .lb-section{padding-left:20px;padding-right:20px}
+  header.lb-header{padding:0 20px!important;gap:12px}
+  .lb-navlink{padding:0 12px;font-size:11px;letter-spacing:.1em}
+  .lb-brand img{height:22px}
+}
+
+/* The chart draws itself at its container's width rather than at a fixed size
+   scaled by CSS, so its labels are always rendered at the size they were
+   specified in. See payoffCurve() below. */
+.lb-chart{min-width:0}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+
+<body>
+<div style="min-height:100vh;background:var(--surface-page);overflow-x:hidden">
+
+  <header class="lb-header" style="position:sticky;top:0;z-index:20;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(8,13,9,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--border-hairline)">
+    <a href="#top" class="lb-brand" style="display:flex;align-items:center" aria-label="Longbow, back to top"><img src="assets/logo-full.svg" alt="Longbow" style="height:26px;display:block"></a>
+    <a href="#waitlist" class="lb-navlink">Join the waitlist</a>
+  </header>
+
+  <section id="top" class="lb-section" style="position:relative;padding-top:104px;padding-bottom:88px">
+    <img src="assets/logo-mark.svg" alt="" aria-hidden="true" class="lb-watermark">
+    <div class="lb-wrap lb-hero" style="position:relative">
+
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:28px;min-width:0">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--radius-pill);background:var(--surface-mint-soft);border:1px solid rgba(102,226,190,.22);color:var(--up-500);font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase">Private beta</span>
+
+        <h1 style="margin:0;font-family:var(--font-display);font-weight:900;font-size:var(--text-hero);line-height:.92;letter-spacing:var(--ls-display);text-transform:uppercase;color:var(--text-display)">Options<br>for any<br><span style="color:var(--gold-400)">asset.</span></h1>
+
+        <p style="margin:0;max-width:38ch;font-weight:300;font-size:var(--text-body-lg);line-height:1.5;color:var(--text-body);text-wrap:pretty">Leverage up, hedge down with LongBow. 
+Options on any asset on Robinhood Chain.</p>
+
+        <div style="display:grid;gap:10px">
+          <span class="lb-label">Crypto and tokenized equities</span>
+          <div id="tickers" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+        </div>
+
+        <div id="waitlist" style="width:100%;max-width:520px;padding:20px;border-radius:var(--radius-lg);background:var(--surface-card);border:1px solid var(--border-hairline);box-shadow:var(--shadow-md);display:grid;gap:14px;scroll-margin-top:96px">
+          <div id="joined" hidden tabindex="-1" style="display:grid;gap:6px">
+            <span style="font:var(--fw-bold) var(--text-title-3)/1.2 var(--font-display);color:var(--up-500)">You're on the list.</span>
+            <span style="font-weight:300;font-size:var(--text-body-sm);line-height:1.5;color:var(--text-muted)">Longbow emails you when your cohort opens. No other mail.</span>
+          </div>
+
+          <form id="form" style="display:grid;gap:14px" novalidate>
+            <label class="lb-label" for="email">Join the waitlist</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div style="flex:1 1 220px;min-width:0">
+                <input id="email" class="lb-input" type="email" name="email" placeholder="you@domain.com" autocomplete="email" required aria-describedby="status">
+              </div>
+              <button id="submit" class="lb-button" type="submit">Request access</button>
+            </div>
+            <!-- Honeypot. Off-screen rather than display:none, since some bots
+                 skip fields they can tell are not rendered. Anything in it came
+                 from something filling every input it found, and the API drops
+                 that submission while answering as though it worked. -->
+            <div class="lb-hp" aria-hidden="true">
+              <label for="company">Company</label>
+              <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <!-- Empty at rest, and hidden while empty, so it costs no words and no
+                 space until the form has something to report. It still has to
+                 exist: without it the form's script throws on first run and the
+                 submit handler never attaches, which turns the button into a
+                 native page-reloading submit. -->
+            <p id="status" class="lb-status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div style="min-width:0;padding:24px;border-radius:var(--radius-xl);background:var(--surface-raised);border:1px solid var(--border-hairline);box-shadow:var(--shadow-lg);display:grid;gap:20px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+          <span class="lb-label" id="egtitle"></span>
+          <span style="font:var(--fw-medium) var(--text-body-sm)/1 var(--font-mono);color:var(--text-faint)">Spot <span id="spot"></span></span>
+        </div>
+
+        <!-- Strike above the chart, settlement below it. The first configures the
+             contract, the second explores the contract it drew, and putting the
+             second under the drawing makes it read as a scrubber on the x axis,
+             which is what it is. -->
+        <div style="display:grid;gap:4px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <span class="lb-label">Strike</span>
+            <span class="lb-readout"><span id="strikeout"></span><small id="strikepct"></small></span>
+          </div>
+          <input id="strike" class="lb-range" type="range" aria-label="Strike">
+          <div class="lb-scale"><span id="strikelo"></span><span id="strikehi"></span></div>
+        </div>
+
+        <div id="payoff" class="lb-chart"></div>
+
+        <div style="display:grid;gap:4px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <span class="lb-label">If ETH settles at</span>
+            <span class="lb-readout"><span id="settleout"></span><small id="settlepct"></small></span>
+          </div>
+          <input id="settle" class="lb-range" type="range" aria-label="Settlement price">
+          <div class="lb-scale"><span id="settlelo"></span><span id="settlehi"></span></div>
+        </div>
+        <dl style="margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
+          <div class="lb-tile"><dt>Max loss</dt><dd id="maxloss" style="color:var(--down-500)"></dd></div>
+          <div class="lb-tile"><dt>Breakeven</dt><dd id="breakeven" style="color:var(--text-display)"></dd></div>
+          <div class="lb-tile"><dt>At settlement</dt><dd id="atsettle"></dd></div>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Three properties, not three steps. A numbered walkthrough here would be
+       narrating what the reader will do before they have decided they want it. -->
+  <section id="what" class="lb-section" style="padding-bottom:96px">
+    <div class="lb-wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:32px 20px;border-top:1px solid var(--border-hairline);padding-top:48px">
+      <div class="lb-claim" style="display:grid;gap:10px;align-content:start">
+        <h3>Fully collateralized</h3>
+        <p>Every call is spot, split at a strike. Nothing is borrowed.</p>
+      </div>
+      <div class="lb-claim" style="display:grid;gap:10px;align-content:start">
+        <h3>No liquidation</h3>
+        <p>No margin call, no liquidation price, no position to defend.</p>
+      </div>
+      <div class="lb-claim" style="display:grid;gap:10px;align-content:start">
+        <h3>Any asset</h3>
+        <p>Long-tail crypto and tokenized equities, side by side on Robinhood Chain.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="lb-section" style="padding-top:48px;padding-bottom:56px;border-top:1px solid var(--border-hairline);background:var(--ink-800)">
+    <div class="lb-wrap" style="display:grid;gap:28px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
+        <img src="assets/logo-full.svg" alt="Longbow" style="height:24px;display:block">
+        <nav style="display:flex;flex-wrap:wrap;gap:24px;font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase">
+          <a href="#waitlist">Waitlist</a>
+          <a id="docslink" href="#what">Docs</a>
+          <a href="mailto:desk@longbowoptions.com">Contact</a>
+        </nav>
+      </div>
+      <p style="margin:0;max-width:720px;font-weight:300;font-size:var(--text-body-sm);line-height:1.6;color:var(--text-faint);text-wrap:pretty">Longbow is an independent system that interoperates with Robinhood Chain and is not affiliated with, endorsed by, or sponsored by Robinhood Markets, Inc. The contracts are not yet audited. A synthetic call can lose its entire premium, and settlement depends on a price the protocol observes at maturity. Crypto assets are volatile and are not covered by SIPC or FDIC protection. Longbow is not a broker-dealer and provides no investment advice. Nothing here is an offer to buy or sell any instrument.</p>
+      <span style="font:var(--fw-medium) 11px/1 var(--font-mono);letter-spacing:var(--ls-label);color:var(--text-faint)">© 2026 LONGBOW</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ===========================================================================
+   Configuration. Everything that has to change before launch is in this block.
+   =========================================================================== */
+
+/* Where waitlist submissions POST. The service that answers this lives in
+   waitlist-api/ and runs on its own machine, so this is a full URL on another
+   origin, something like https://whitelist.longbowoptions.com/waitlist.
+
+   It must be https. This page is served over https, and a browser blocks an
+   https page from calling an http endpoint outright, with no error the page can
+   catch and report.
+
+   Set to empty to take the form offline: it then says the endpoint is not
+   configured rather than reporting a success it did not have. See README.md. */
+const WAITLIST_ENDPOINT = "https://whitelist.longbowoptions.com/waitlist";
+
+/* The documentation site, once it has a public URL. It is where the how-it-works
+   lives, which is why this page no longer carries one. Until the URL exists the
+   link falls back to the claims section. */
+const DOCS_URL = "";
+
+/* The chips under the headline. Illustrative of the two asset classes the
+   protocol settles, not a listing. */
+const TICKERS = [
+  { symbol: "BTC", name: "Bitcoin" },
+  { symbol: "ETH", name: "Ethereum" },
+  { symbol: "AAPL", name: "Apple" },
+  { symbol: "NVDA", name: "Nvidia" },
+];
+
+/* The worked example in the panel. Illustrative numbers, not a quote and not
+   modelled: the premiums are hand set, and monotone on purpose, cheaper as the
+   strike rises and dearer as the term lengthens.
+
+   Every premium is denominated against `spot`, so changing the spot means
+   rebuilding the whole grid rather than editing one number. See README.md. */
+const EXAMPLE = {
+  symbol: "ETH",
+  spot: 2000,
+  termLabel: "1 year",
+
+  /* Premium anchors by moneyness, interpolated between so the strike can be
+     dragged rather than stepped. Hand set and monotone on purpose.
+
+     The ladder runs from 50% in the money to 150% out, so the low end has to
+     carry intrinsic value: a $1,000 strike against $2,000 spot cannot be worth
+     less than the $1,000 it is already in the money by, whatever else is true.
+     The top end is what forces the one year term. At thirty days a strike at
+     two and a half times spot is worth cents, and the last third of the slider
+     would read "max loss $0", which is both useless and not the impression to
+     leave. Over a year the same strike still carries real premium. */
+  anchors: [
+    { moneyness: -0.50, premium: 1100 },
+    { moneyness: -0.25, premium: 770 },
+    { moneyness: 0.00, premium: 540 },
+    { moneyness: 0.25, premium: 380 },
+    { moneyness: 0.50, premium: 275 },
+    { moneyness: 1.00, premium: 145 },
+    { moneyness: 1.50, premium: 80 },
+  ],
+
+  /* The settlement slider spans the chart's x window exactly, so the handle and
+     the drawing agree about where the edges are. Set to match the strike ladder,
+     which puts both sliders on the same $1,000 to $5,000 scale. */
+  windowLo: 0.5,
+  windowHi: 2.5,
+
+  step: 50,
+  defaultStrike: 2200,
+  defaultSettle: 3000,
+};
+
+/* =========================================================================== */
+
+const usd = (n) => "$" + Math.round(n).toLocaleString("en-US");
+const signed = (n) => (n >= 0 ? "+" : "-") + usd(Math.abs(n));
+
+/* ---------- ticker chips ---------- */
+
+document.getElementById("tickers").innerHTML = TICKERS
+  .map((t) => `<span class="lb-chip"><b>${t.symbol}</b><span>${t.name}</span></span>`)
+  .join("");
+
+/* ---------- the payoff curve ----------
+
+   Profit and loss at maturity for one call: flat at minus the premium up to the
+   strike, then rising one for one.
+
+   The viewBox is the container's own width rather than a fixed one scaled to
+   fit. A fixed 520 unit box shown in a 287px column renders every label at 55%
+   of its stated size, which on a phone is somewhere under six pixels. Matching
+   the two means a 9.5px label is 9.5px wherever the chart is drawn, and the
+   drawing reflows instead of shrinking.
+
+   Red below zero and mint above, with the crossing at the breakeven rather than
+   at the strike. That distinction is the whole point of the chart: the strike is
+   where the payoff starts, the breakeven is where the position starts winning.
+
+   The axis and marker conventions follow docs/src/components/PayoffChart.astro
+   so the two charts read as siblings, though that one draws both claims'
+   payoffs rather than one leg's profit and loss. */
+
+function payoffCurve({ spot, strike, premium, settle }, width) {
+  const W = Math.round(Math.min(560, Math.max(280, width || 520)));
+  const H = 200;
+  const padL = 52, padR = 18, padT = 18, padB = 34;
+
+  /* The x window is fixed, in spot units. Anchoring it on the strike, as this
+     did while the strike could not move, is what made the chart legible then and
+     useless now: every selection would render an identical shape and only the
+     axis numbers would change. Fixed, the kink visibly slides right as the
+     reader raises the strike, which is the thing worth watching.
+
+     The y window is scaled to the premium instead of to the profit at the right
+     edge. Scaling it to the profit is what collapsed the loss band to 3% at the
+     cheap end, since a $30 premium is nothing against the $770 of upside sitting
+     at +50% spot. Pinned to the premium, the band is 1.3 / 3.8 of the height for
+     every combination, and the payoff line leaves through the top of the frame
+     rather than reaching the right edge. That reads as uncapped, which is what
+     it is. */
+  const xLo = spot * EXAMPLE.windowLo, xHi = spot * EXAMPLE.windowHi;
+  const pnl = (x) => Math.max(0, x - strike) - premium;
+
+  /* The ceiling is two and a half premiums, except that it must also contain the
+     settlement marker, or dragging the second handle right would park the dot on
+     the top edge and stop responding.
+
+     The floor then has to be measured against that ceiling rather than against
+     the premium alone. Fixed at 1.3 premiums it works until the ceiling is
+     driven up by a distant settlement, at which point a cheap premium puts the
+     flat leg within a pixel of the plot floor and the two merge into one line.
+     Taking the larger of the two keeps a visible gap under the flat leg at every
+     combination of the handles. */
+  const yHi = Math.max(premium * 2.5, pnl(settle) * 1.25);
+  const yLo = -premium - Math.max(premium * 0.3, (yHi + premium) * 0.05);
+
+  const px = (v) => padL + ((v - xLo) / (xHi - xLo)) * (W - padL - padR);
+  const py = (v) => H - padB - ((v - yLo) / (yHi - yLo)) * (H - padT - padB);
+
+  const breakeven = strike + premium;
+  const zeroY = py(0);
+  const floorY = py(-premium);
+
+  /* Where the payoff crosses the top of the frame. Clamped to the right edge so
+     an edited premium large enough to never reach the ceiling still draws. */
+  const exitX = Math.min(strike + (yHi + premium), xHi);
+  const exitY = py(pnl(exitX));
+
+  /* A strike at the right edge of the window breaks even past it, so there is no
+     profit to show and no breakeven to mark. Drawn anyway, both run off the
+     canvas: the tint spills into the padding and the label overhangs the frame.
+     The tile still carries the number. */
+  const inView = breakeven <= xHi;
+
+  /* Two closed areas rather than one clipped path: the loss region is the
+     rectangle from the left edge to the breakeven, and the profit region runs
+     from the breakeven up to where the line leaves the frame and then along the
+     top, so the tint does not stop short of the right edge while the payoff it
+     is shading carries on. They meet exactly on the zero line. */
+  const lossArea = inView
+    ? `M${px(xLo)} ${zeroY} L${px(xLo)} ${floorY} L${px(strike)} ${floorY} L${px(breakeven)} ${zeroY} Z`
+    /* Without a breakeven in frame the whole window is a loss, so this is the
+       full rectangle. Stopping it at the strike and letting the path close
+       itself draws a wedge instead, because the closing edge cuts diagonally
+       back to the opposite corner. */
+    : `M${px(xLo)} ${zeroY} L${px(xLo)} ${floorY} L${px(xHi)} ${floorY} L${px(xHi)} ${zeroY} Z`;
+  const gainArea = inView
+    ? `M${px(breakeven)} ${zeroY} L${exitX === xHi ? px(xHi) : px(exitX)} ${exitY} L${px(xHi)} ${Math.min(exitY, padT)} L${px(xHi)} ${zeroY} Z`
+    : "";
+  const line = `M${px(xLo)} ${floorY} L${px(strike)} ${floorY} L${px(exitX)} ${exitY}`;
+
+  /* The strike and the breakeven are one premium apart, which at this scale is
+     narrower than either label. They lean away from each other rather than
+     stacking, so neither has to be dropped. */
+  const rule = (x, colour, label, side) => `
+    <line x1="${px(x)}" y1="${py(yLo)}" x2="${px(x)}" y2="${padT}" stroke="${colour}" stroke-width="1" stroke-dasharray="3 4" opacity=".6"/>
+    <text x="${px(x) + (side === "end" ? -5 : 5)}" y="${padT - 5}" text-anchor="${side}" font-family="IBM Plex Mono" font-size="9.5" letter-spacing=".08em" fill="${colour}">${label}</text>`;
+
+  /* Both gridlines always draw, but the premium's label is dropped when the two
+     would overprint. That happens at a cheap premium with a distant settlement,
+     where the band is a few pixels tall. Zero keeps its label because it is the
+     axis; the premium is on the max loss tile either way. */
+  const yTicks = [
+    { v: 0, label: "0", showLabel: true },
+    { v: -premium, label: "-" + usd(premium), showLabel: py(-premium) - py(0) >= 11 },
+  ];
+
+  return `
+<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;height:auto" role="img"
+     aria-label="Profit and loss at maturity for one call. Flat at a loss of ${usd(premium)} up to the strike of ${usd(strike)}, then rising one for one, crossing into profit at the breakeven of ${usd(breakeven)} and uncapped above it. At a settlement price of ${usd(settle)} the position is worth ${signed(pnl(settle))}.">
+  <path d="${lossArea}" fill="var(--down-500)" opacity=".13"/>
+  ${gainArea ? `<path d="${gainArea}" fill="var(--up-500)" opacity=".13"/>` : ""}
+
+  ${yTicks.map((t) => `
+    <line x1="${padL}" y1="${py(t.v)}" x2="${W - padR}" y2="${py(t.v)}" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="${t.v === 0 ? "none" : "2 4"}" opacity="${t.v === 0 ? ".55" : ".35"}"/>
+    ${t.showLabel ? `<text x="${padL - 8}" y="${py(t.v) + 3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--text-faint)">${t.label}</text>` : ""}`).join("")}
+
+  ${rule(strike, "var(--gold-400)", "STRIKE", "end")}
+  ${inView ? rule(breakeven, "var(--up-500)", "BREAKEVEN", "start") : ""}
+
+  <path d="${line}" fill="none" stroke="var(--gold-400)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Spot is an axis tick under the plot, not a marker on the curve. Hung off
+       the zero line it lands inside the loss tint, and on the curve it would sit
+       on the flat leg saying only what the flat leg already says. -->
+  <line x1="${px(spot)}" y1="${H - padB}" x2="${px(spot)}" y2="${H - padB + 4}" stroke="var(--text-faint)" stroke-width="1"/>
+  <text x="${px(spot)}" y="${H - padB + 15}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="var(--text-muted)">SPOT ${usd(spot)}</text>
+
+  <!-- The settlement handle's position on the curve. Its rule carries no label:
+       the slider directly beneath states the price, and a third label up top
+       would collide with the two that are already there. -->
+  <line x1="${px(settle)}" y1="${H - padB}" x2="${px(settle)}" y2="${py(pnl(settle))}" stroke="var(--text-display)" stroke-width="1" opacity=".3"/>
+  <circle cx="${px(settle)}" cy="${py(pnl(settle))}" r="4.5" fill="${pnl(settle) >= 0 ? "var(--up-500)" : "var(--down-500)"}" stroke="var(--surface-raised)" stroke-width="2"/>
+
+  <!-- No x-axis title: the slider immediately under the chart is labelled "if ETH
+       settles at" and carries the same range, which says it better than a caption. -->
+</svg>`;
+}
+
+const chart = document.getElementById("payoff");
+const strikeRange = document.getElementById("strike");
+const settleRange = document.getElementById("settle");
+
+const A = EXAMPLE.anchors;
+const strikeLo = Math.round(EXAMPLE.spot * (1 + A[0].moneyness));
+const strikeHi = Math.round(EXAMPLE.spot * (1 + A[A.length - 1].moneyness));
+const settleLo = Math.round(EXAMPLE.spot * EXAMPLE.windowLo);
+const settleHi = Math.round(EXAMPLE.spot * EXAMPLE.windowHi);
+
+/* The premium between anchors. Linear rather than a fitted curve: five points
+   already carry the shape, and interpolating them keeps every number the reader
+   sees traceable to one that was set deliberately. */
+function premiumAt(strike) {
+  const m = strike / EXAMPLE.spot - 1;
+  if (m <= A[0].moneyness) return A[0].premium;
+  for (let i = 1; i < A.length; i++) {
+    if (m <= A[i].moneyness) {
+      const t = (m - A[i - 1].moneyness) / (A[i].moneyness - A[i - 1].moneyness);
+      return Math.round(A[i - 1].premium + t * (A[i].premium - A[i - 1].premium));
+    }
+  }
+  return A[A.length - 1].premium;
+}
+
+const pct = (v, base) => (v >= base ? "+" : "") + (((v - base) / base) * 100).toFixed(0) + "%";
+
+function initRange(el, lo, hi, value) {
+  el.min = lo; el.max = hi; el.step = EXAMPLE.step; el.value = value;
+}
+initRange(strikeRange, strikeLo, strikeHi, EXAMPLE.defaultStrike);
+initRange(settleRange, settleLo, settleHi, EXAMPLE.defaultSettle);
+
+document.getElementById("strikelo").textContent = usd(strikeLo);
+document.getElementById("strikehi").textContent = usd(strikeHi);
+document.getElementById("settlelo").textContent = usd(settleLo);
+document.getElementById("settlehi").textContent = usd(settleHi);
+document.getElementById("spot").textContent = usd(EXAMPLE.spot);
+/* Driven from the config rather than written into the markup, so the term in the
+   heading cannot drift away from the term the premiums were set for. */
+document.getElementById("egtitle").textContent =
+  `Example: ${EXAMPLE.symbol} synthetic call, ${EXAMPLE.termLabel}`;
+
+const fill = (el) => {
+  const f = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.setProperty("--fill", f + "%");
+};
+
+/* The single path everything goes through: both sliders, the first paint and the
+   resize observer all call this, so the chart and the tiles can never disagree
+   about what they are showing. */
+function render() {
+  const strike = Number(strikeRange.value);
+  const settle = Number(settleRange.value);
+  const premium = premiumAt(strike);
+  const atSettle = Math.max(0, settle - strike) - premium;
+
+  fill(strikeRange);
+  fill(settleRange);
+
+  chart.innerHTML = payoffCurve({ spot: EXAMPLE.spot, strike, premium, settle }, chart.clientWidth);
+
+  document.getElementById("strikeout").textContent = usd(strike);
+  document.getElementById("strikepct").textContent = pct(strike, EXAMPLE.spot);
+  document.getElementById("settleout").textContent = usd(settle);
+  document.getElementById("settlepct").textContent = pct(settle, EXAMPLE.spot);
+
+  document.getElementById("maxloss").textContent = usd(premium);
+  document.getElementById("breakeven").textContent = usd(strike + premium);
+
+  const at = document.getElementById("atsettle");
+  at.textContent = signed(atSettle);
+  at.style.color = atSettle >= 0 ? "var(--up-500)" : "var(--down-500)";
+
+  /* The value announced for a slider should be the thing it means, not the raw
+     number the control happens to hold. */
+  strikeRange.setAttribute("aria-valuetext", `${usd(strike)}, ${pct(strike, EXAMPLE.spot)} of spot, premium ${usd(premium)}`);
+  settleRange.setAttribute("aria-valuetext", `${usd(settle)}, position worth ${signed(atSettle)}`);
+}
+
+strikeRange.addEventListener("input", render);
+settleRange.addEventListener("input", render);
+render();
+
+/* Redrawn on resize rather than stretched, since the point of matching the
+   viewBox to the container is that the two do not diverge. */
+if (window.ResizeObserver) {
+  let queued = false;
+  new ResizeObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; render(); });
+  }).observe(chart);
+}
+
+if (DOCS_URL) document.getElementById("docslink").href = DOCS_URL;
+
+/* ---------- the waitlist form ---------- */
+
+const form = document.getElementById("form");
+const emailField = document.getElementById("email");
+const submitButton = document.getElementById("submit");
+const status = document.getElementById("status");
+const joined = document.getElementById("joined");
+
+/* The status line has no resting copy, so clearing it means emptying it, which
+   also takes it back out of the layout. */
+const RESTING = "";
+
+function say(message, tone) {
+  status.textContent = message;
+  if (tone) status.dataset.tone = tone; else delete status.dataset.tone;
+}
+
+/* Deliberately loose. The endpoint is the only thing that can actually confirm
+   an address, so this rejects what is obviously not one and nothing more. */
+const looksLikeEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+
+emailField.addEventListener("input", () => {
+  if (emailField.getAttribute("aria-invalid") === "true") {
+    emailField.removeAttribute("aria-invalid");
+    say(RESTING);
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const email = emailField.value.trim();
+
+  if (!looksLikeEmail(email)) {
+    emailField.setAttribute("aria-invalid", "true");
+    emailField.focus();
+    say("That does not look like an email address.", "error");
+    return;
+  }
+
+  if (!WAITLIST_ENDPOINT) {
+    say("The waitlist endpoint is not configured yet, so nothing was sent. Write to desk@longbowoptions.com in the meantime.");
+    return;
+  }
+
+  submitButton.disabled = true;
+  emailField.disabled = true;
+  say("Sending.");
+
+  try {
+    const response = await fetch(WAITLIST_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email, company: document.getElementById("company").value, source: "landing" }),
+    });
+    if (!response.ok) throw new Error(String(response.status));
+    say(RESTING);
+    form.hidden = true;
+    joined.hidden = false;
+    /* The form the user was in has just been removed, so focus has to be put
+       somewhere deliberate or it falls back to the document and the
+       confirmation goes unannounced. */
+    joined.focus();
+  } catch {
+    submitButton.disabled = false;
+    emailField.disabled = false;
+    say("That did not go through. Try again, or write to desk@longbowoptions.com.", "error");
+  }
+});
+</script>
+</body>
+</html>
