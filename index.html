@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Longbow · Options for any asset</title>
-<meta name="description" content="Longbow splits one unit of spot into a capped claim and a call. Capped downside, uncapped upside, on assets that have never had an options chain.">
+<meta name="description" content="Leverage up, hedge down with LongBow. Options for any asset on Robinhood Chain.">
 <link rel="icon" href="assets/logo-mark.svg">
 <link rel="canonical" href="https://longbowoptions.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Longbow · Options for any asset">
-<meta property="og:description" content="Longbow splits one unit of spot into a capped claim and a call. Capped downside, uncapped upside, on assets that have never had an options chain.">
+<meta property="og:description" content="Leverage up, hedge down with LongBow. Options for any asset on Robinhood Chain.">
 <meta property="og:url" content="https://longbowoptions.com/">
 <meta property="og:image" content="https://longbowoptions.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -281,7 +281,7 @@ img{max-width:100%}
         <h1 style="margin:0;font-family:var(--font-display);font-weight:900;font-size:var(--text-hero);line-height:.92;letter-spacing:var(--ls-display);text-transform:uppercase;color:var(--text-display)">Options<br>for any<br><span style="color:var(--gold-400)">asset.</span></h1>
 
         <p style="margin:0;max-width:38ch;font-weight:300;font-size:var(--text-body-lg);line-height:1.5;color:var(--text-body);text-wrap:pretty">Leverage up, hedge down with LongBow. 
-Options on any asset on Robinhood Chain.</p>
+Options for any asset on Robinhood Chain.</p>
 
         <div style="display:grid;gap:10px">
           <span class="lb-label">Crypto and tokenized equities</span>
@@ -385,7 +385,7 @@ Options on any asset on Robinhood Chain.</p>
         <nav style="display:flex;flex-wrap:wrap;gap:24px;font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase">
           <a href="#waitlist">Waitlist</a>
           <a id="docslink" href="#what">Docs</a>
-          <a href="mailto:desk@longbowoptions.com">Contact</a>
+          <a href="mailto:contact@longbowoptions.com">Contact</a>
         </nav>
       </div>
       <p style="margin:0;max-width:720px;font-weight:300;font-size:var(--text-body-sm);line-height:1.6;color:var(--text-faint);text-wrap:pretty">Longbow is an independent system that interoperates with Robinhood Chain and is not affiliated with, endorsed by, or sponsored by Robinhood Markets, Inc. The contracts are not yet audited. A synthetic call can lose its entire premium, and settlement depends on a price the protocol observes at maturity. Crypto assets are volatile and are not covered by SIPC or FDIC protection. Longbow is not a broker-dealer and provides no investment advice. Nothing here is an offer to buy or sell any instrument.</p>
@@ -752,7 +752,7 @@ form.addEventListener("submit", async (event) => {
   }
 
   if (!WAITLIST_ENDPOINT) {
-    say("The waitlist endpoint is not configured yet, so nothing was sent. Write to desk@longbowoptions.com in the meantime.");
+    say("The waitlist endpoint is not configured yet, so nothing was sent. Write to contact@longbowoptions.com in the meantime.");
     return;
   }
 
@@ -777,7 +777,7 @@ form.addEventListener("submit", async (event) => {
   } catch {
     submitButton.disabled = false;
     emailField.disabled = false;
-    say("That did not go through. Try again, or write to desk@longbowoptions.com.", "error");
+    say("That did not go through. Try again, or write to contact@longbowoptions.com.", "error");
   }
 });
 </script>
