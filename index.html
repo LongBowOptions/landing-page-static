@@ -15,6 +15,16 @@
 <meta property="og:image" content="https://longbowoptions.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EZ7RB8Y181"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-EZ7RB8Y181');
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -452,6 +462,10 @@ Options for any asset on Robinhood Chain.</p>
         </div>
       </div>
       <p style="margin:0;max-width:720px;font-weight:300;font-size:var(--text-body-sm);line-height:1.6;color:var(--text-faint);text-wrap:pretty">Longbow is an independent system that interoperates with Robinhood Chain and is not affiliated with, endorsed by, or sponsored by Robinhood Markets, Inc. The contracts are not yet audited. A synthetic call can lose its entire premium, and settlement depends on a price the protocol observes at maturity. Crypto assets are volatile and are not covered by SIPC or FDIC protection. Longbow is not a broker-dealer and provides no investment advice. Nothing here is an offer to buy or sell any instrument.</p>
+      <!-- Notice, not opt-in: the analytics tag runs in the head and has set its
+           cookies before anyone reads this. Gating it behind a banner is the
+           change to make if that ever needs to be consent. -->
+      <p style="margin:0;max-width:720px;font-weight:300;font-size:var(--text-body-sm);line-height:1.6;color:var(--text-faint);text-wrap:pretty">This site uses cookies. By continuing to browse, you accept them.</p>
       <span style="font:var(--fw-medium) 11px/1 var(--font-mono);letter-spacing:var(--ls-label);color:var(--text-faint)">© 2026 LONGBOW</span>
     </div>
   </footer>
@@ -792,6 +806,15 @@ function say(message, tone) {
   if (tone) status.dataset.tone = tone; else delete status.dataset.tone;
 }
 
+/* Analytics must never be able to affect the flow it is measuring. A blocker,
+   or a network that never reaches the tag, leaves gtag undefined; an unguarded
+   call would throw inside the submit handler's try, be caught there as a network
+   failure, and tell someone who has just signed up successfully that it did not
+   go through. Both guards are here for that one case. */
+const track = (event) => {
+  try { if (typeof gtag === "function") gtag("event", event); } catch {}
+};
+
 /* Deliberately loose. The endpoint is the only thing that can actually confirm
    an address, so this rejects what is obviously not one and nothing more. */
 const looksLikeEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
@@ -837,6 +860,9 @@ form.addEventListener("submit", async (event) => {
        somewhere deliberate or it falls back to the document and the
        confirmation goes unannounced. */
     joined.focus();
+    /* The one conversion this page has. A tag that records visits but not the
+       thing the page exists to do measures the wrong half. */
+    track("waitlist_signup");
   } catch {
     submitButton.disabled = false;
     emailField.disabled = false;
