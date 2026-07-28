@@ -212,6 +212,31 @@ img{max-width:100%}
 /* Takes no room in the form's grid gap until it has something to say. */
 .lb-status:empty{display:none}
 
+/* ---------- social marks ---------- */
+
+.lb-social{display:flex;gap:8px}
+.lb-social a{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:var(--radius-control);
+  background:var(--surface-accent-soft);border:1px solid var(--border-hairline);
+  color:var(--gold-400);
+  transition:background .2s,border-color .2s,color .2s;
+}
+.lb-social a:hover{background:rgba(212,178,93,.18);border-color:var(--gold-400);color:var(--gold-100)}
+
+/* The header set: no box, so the gold call to action stays the only button in
+   the bar. Still 30px of hit area around a 16px glyph, since a bare icon is
+   easy to make too small to press. */
+.lb-social--bare a{
+  width:30px;height:30px;background:none;border:none;color:var(--text-muted);
+}
+.lb-social--bare a:hover{background:none;color:var(--gold-400)}
+.lb-social--bare svg{width:16px;height:16px}
+/* currentColor so the mark inherits the link's hover state rather than needing
+   its own rule, and a fixed size so the two glyphs sit on the same optical
+   weight despite different bounding boxes. */
+.lb-social svg{width:15px;height:15px;display:block;fill:currentColor}
+
 /* The honeypot. Moved off-screen rather than hidden, because a field that is
    display:none is one a bot can cheaply learn to skip. aria-hidden and the
    negative tabindex keep it away from anyone reading or tabbing the form. */
@@ -249,6 +274,10 @@ img{max-width:100%}
   header.lb-header{padding:0 20px!important;gap:12px}
   .lb-navlink{padding:0 12px;font-size:11px;letter-spacing:.1em}
   .lb-brand img{height:22px}
+  /* The bar cannot hold the wordmark, three marks and the call to action at this
+     width. The marks go rather than the action, and the footer still carries
+     them a scroll away. */
+  .lb-social--bare{display:none}
 }
 
 /* The chart draws itself at its container's width rather than at a fixed size
@@ -264,11 +293,33 @@ img{max-width:100%}
 </head>
 
 <body>
+
+<!-- The social marks, defined once and referenced from both the header and the
+     footer. Inline rather than fetched, so the page still makes no request it
+     does not need, and a sprite rather than two copies, so a path that changes
+     changes in one place. Positioned off rather than display:none, which some
+     engines treat as a reason not to resolve a <use> into it. -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></symbol>
+  <symbol id="i-telegram" viewBox="0 0 24 24"><path d="M23.91 3.79 20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7 .85 12c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.54 1.74z"/></symbol>
+  <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.6 12.6 0 0 0-.618-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.028C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.246.198.373.293a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.363 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.029zM8.02 15.331c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.211 0 2.176 1.095 2.157 2.419 0 1.333-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.211 0 2.176 1.095 2.157 2.419 0 1.333-.946 2.419-2.157 2.419z"/></symbol>
+</svg>
+
 <div style="min-height:100vh;background:var(--surface-page);overflow-x:hidden">
 
   <header class="lb-header" style="position:sticky;top:0;z-index:20;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(8,13,9,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--border-hairline)">
     <a href="#top" class="lb-brand" style="display:flex;align-items:center" aria-label="Longbow, back to top"><img src="assets/logo-full.svg" alt="Longbow" style="height:26px;display:block"></a>
-    <a href="#waitlist" class="lb-navlink">Join the waitlist</a>
+    <div style="display:flex;align-items:center;gap:14px">
+      <!-- Bare glyphs here, not the footer's bordered boxes: the bar already has
+           one gold box in it, and three more beside it would leave four things
+           of equal weight and no obvious primary action. -->
+      <div class="lb-social lb-social--bare">
+        <a href="https://x.com/LongBowOptions" target="_blank" rel="noopener noreferrer" aria-label="Longbow on X"><svg><use href="#i-x"/></svg></a>
+        <a href="https://t.me/+pqh50vQmLjo1ZWYx" target="_blank" rel="noopener noreferrer" aria-label="Longbow on Telegram"><svg><use href="#i-telegram"/></svg></a>
+        <a href="https://discord.gg/JWNDEkXdV8" target="_blank" rel="noopener noreferrer" aria-label="Longbow on Discord"><svg><use href="#i-discord"/></svg></a>
+      </div>
+      <a href="#waitlist" class="lb-navlink">Join the waitlist</a>
+    </div>
   </header>
 
   <section id="top" class="lb-section" style="position:relative;padding-top:104px;padding-bottom:88px">
@@ -382,11 +433,23 @@ Options for any asset on Robinhood Chain.</p>
     <div class="lb-wrap" style="display:grid;gap:28px">
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
         <img src="assets/logo-full.svg" alt="Longbow" style="height:24px;display:block">
-        <nav style="display:flex;flex-wrap:wrap;gap:24px;font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase">
-          <a href="#waitlist">Waitlist</a>
-          <a id="docslink" href="#what">Docs</a>
-          <a href="mailto:contact@longbowoptions.com">Contact</a>
-        </nav>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:24px">
+          <nav style="display:flex;flex-wrap:wrap;gap:24px;font:var(--fw-medium) 11px/1 var(--font-display);letter-spacing:var(--ls-label);text-transform:uppercase">
+            <a href="#waitlist">Waitlist</a>
+            <a id="docslink" href="#what">Docs</a>
+            <a href="mailto:contact@longbowoptions.com">Contact</a>
+          </nav>
+
+          <!-- Marks are inline rather than fetched: the page has no external
+               requests beyond its two fonts, and an icon font or a CDN sprite
+               would add a third for two glyphs. aria-label carries the name,
+               since the path alone says nothing to a screen reader. -->
+          <div class="lb-social">
+            <a href="https://x.com/LongBowOptions" target="_blank" rel="noopener noreferrer" aria-label="Longbow on X"><svg><use href="#i-x"/></svg></a>
+            <a href="https://t.me/+pqh50vQmLjo1ZWYx" target="_blank" rel="noopener noreferrer" aria-label="Longbow on Telegram"><svg><use href="#i-telegram"/></svg></a>
+            <a href="https://discord.gg/JWNDEkXdV8" target="_blank" rel="noopener noreferrer" aria-label="Longbow on Discord"><svg><use href="#i-discord"/></svg></a>
+          </div>
+        </div>
       </div>
       <p style="margin:0;max-width:720px;font-weight:300;font-size:var(--text-body-sm);line-height:1.6;color:var(--text-faint);text-wrap:pretty">Longbow is an independent system that interoperates with Robinhood Chain and is not affiliated with, endorsed by, or sponsored by Robinhood Markets, Inc. The contracts are not yet audited. A synthetic call can lose its entire premium, and settlement depends on a price the protocol observes at maturity. Crypto assets are volatile and are not covered by SIPC or FDIC protection. Longbow is not a broker-dealer and provides no investment advice. Nothing here is an offer to buy or sell any instrument.</p>
       <span style="font:var(--fw-medium) 11px/1 var(--font-mono);letter-spacing:var(--ls-label);color:var(--text-faint)">© 2026 LONGBOW</span>
